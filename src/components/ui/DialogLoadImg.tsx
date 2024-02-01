@@ -24,10 +24,14 @@ export const DialogLoadImg = () => {
   const inputFileRef = useRef<HTMLInputElement>(null)
 
   const onSubmit = async () => {
-    console.log(inputFileRef.current?.files)
+    
     if (inputFileRef.current?.files?.[0]) {
       setFileContext?.(inputFileRef.current.files[0])
-    } else if (fileUrl) {
+      onClose()
+      return
+    }
+    
+    if (fileUrl) {
       await axiosInstance({
         method: 'GET',
         url: fileUrl,
@@ -38,10 +42,17 @@ export const DialogLoadImg = () => {
               type: res.headers["content-type"]
             });
             setFileContext?.(file)
+            onClose()
           }
         })
     }
+  }
 
+  const onClose = () => {
+    if (inputFileRef.current?.files) {
+      inputFileRef.current.files = null
+    }
+    setFileUrl('')
     setIsOpen(false)
   }
 
@@ -79,7 +90,6 @@ export const DialogLoadImg = () => {
                 accept="image/*"
                 className="col-span-3"
                 ref={inputFileRef}
-                // onChange={handleOnChangeFile}
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
@@ -96,7 +106,7 @@ export const DialogLoadImg = () => {
           </div>
         </div>
         <DialogFooter>
-          <Button onClick={onSubmit} form="filesForm" type="submit">Подтвердить</Button>
+          <Button onClick={onSubmit} type="submit">Подтвердить</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
