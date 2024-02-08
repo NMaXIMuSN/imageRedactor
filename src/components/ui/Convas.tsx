@@ -1,5 +1,8 @@
-import { MouseEvent, useContext, useEffect, useMemo, useRef } from 'react'
+import { MouseEvent, useContext, useEffect, useMemo } from 'react'
 import { ImageDataContext } from '../context/ImageDataContext/ImageDataContext'
+import { Button } from './button'
+import { acceptFiler, blackAndWhite, invert } from '@/lib/filters'
+import { CanvasContext } from '../context/CanvasContext/CanvasContext'
 
 interface CanvasProps {
   fileUrl: string
@@ -9,7 +12,8 @@ interface CanvasProps {
 
 export const Canvas = ({ fileUrl }: CanvasProps) => {
   const img = useMemo(() => new Image(), [])
-  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const canvasRef = useContext(CanvasContext);
+
   const { setHeight, setWidth, setX, setY} = useContext(ImageDataContext)
 
   img.onload = () => {
@@ -35,7 +39,38 @@ export const Canvas = ({ fileUrl }: CanvasProps) => {
     setY?.(Math.ceil((e.clientY - y) * kY))
   }
 
+  const invertColors = () => {
+    if (canvasRef.current) {
+      acceptFiler(canvasRef.current, invert)
+    }
+  }
+  const blackAndWhiteColors = () => {
+    if (canvasRef.current) {
+      acceptFiler(canvasRef.current, blackAndWhite)
+    }
+  }
+
+  const onReset = () => {
+    if (!canvasRef.current) {
+      return
+    }
+
+    const context = canvasRef.current?.getContext('2d')
+    context?.drawImage(img, 0, 0)
+  }
+
   return (
-    <canvas ref={canvasRef} className="max-w-full" onMouseMove={handleOnMouseMove}/>
+    <>
+      <Button onClick={invertColors}>
+        инвертировать цвета
+      </Button>
+      <Button onClick={blackAndWhiteColors}>
+        черно белый фильтр
+      </Button>
+      <Button onClick={onReset}>
+        отмена
+      </Button>
+      <canvas ref={canvasRef} className="max-w-full" onMouseMove={handleOnMouseMove}/>
+    </>
   )
 }
