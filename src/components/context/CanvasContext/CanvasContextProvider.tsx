@@ -1,12 +1,22 @@
-import { ReactNode } from "react"
-import { CanvasContext, canvasRef } from "./CanvasContext"
+import { ReactNode, useState } from "react"
+import { CanvasContext, CanvasContextSchema, canvasRef } from "./CanvasContext"
 
 export interface CanvasContextProviderProps {
   children: ReactNode
 }
 
 export const CanvasContextProvider = ({ children }: CanvasContextProviderProps) => {
-  return <CanvasContext.Provider value={canvasRef}>
+  const [isVisibleDefaultCanvas, setIsVisibleDefaultCanvas] = useState(false)
+  const [defaultImageData, setDefaultImageData] = useState<ImageData>()
+
+  const value: CanvasContextSchema = {
+    canvasRef, 
+    isVisibleDefaultCanvas,
+    setIsVisibleDefaultCanvas,
+    defaultImageData,
+    setDefaultImageData,
+  }
+  return <CanvasContext.Provider value={value}>
     { children }
   </CanvasContext.Provider>
 }

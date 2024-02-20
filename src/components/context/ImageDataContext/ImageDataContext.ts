@@ -1,14 +1,15 @@
-import { createContext } from "react";
+import { Dispatch, SetStateAction, createContext } from "react";
 
 export interface ImageDataContextSchema {
-  width?: number;
-  height?: number;
-  setWidth?: (e: number) => void;
-  setHeight?: (e: number) => void;
   x?: number,
   y?: number,
-  setY?: (e: number) => void,
-  setX?: (e: number) => void,
+  setY?: Dispatch<SetStateAction<number>>,
+  setX?: Dispatch<SetStateAction<number>>,
+  img: HTMLImageElement
 }
 
-export const ImageDataContext = createContext<ImageDataContextSchema>({})
+export const img = new Image()
+
+export const ImageDataContext = createContext<ImageDataContextSchema>({
+  img
+})

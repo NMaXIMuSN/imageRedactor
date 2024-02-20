@@ -17,7 +17,7 @@ export const DownloadImage = () => {
   }
 
   return (
-    <div onClick={onDownload}>
+    <div className="cursor-pointer" onClick={onDownload}>
       Скачать
     </div>
   )

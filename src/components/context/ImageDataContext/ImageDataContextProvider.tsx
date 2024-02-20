@@ -1,24 +1,26 @@
-import { ReactNode, useState } from "react"
-import { ImageDataContext, ImageDataContextSchema } from "./ImageDataContext"
+import { ReactNode, useContext, useEffect, useState } from "react"
+import { ImageDataContext, ImageDataContextSchema, img } from "./ImageDataContext"
+import { FileContext } from "../FileContext/FileContext"
 
 export interface ImageDataContextProviderProps {
   children?: ReactNode
 }
 
 export const ImageDataContextProvider= ({ children }: ImageDataContextProviderProps) => {
-  const [ height, setHeight ] = useState(0)
-  const [ width, setWidth ] = useState(0)
+  const { fileUrl } = useContext(FileContext)
   const [ x, setX ] = useState(0)
   const [ y, setY ] = useState(0)
+
+  useEffect(() => {
+    img.src = fileUrl || ''
+  }, [fileUrl])
+
   const value: ImageDataContextSchema = {
-    width,
-    height,
-    setWidth,
-    setHeight,
     setX,
     setY,
     x,
-    y
+    y,
+    img
   }
 
   return (

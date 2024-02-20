@@ -5,23 +5,19 @@ import { CanvasContext } from "../context/CanvasContext/CanvasContext"
 
 export const Footer = () => {
   const { file } = useContext(FileContext)
-  const { width, height, x, y } = useContext(ImageDataContext)
-
-  const refCanvas = useContext(CanvasContext)
+  const { img, x, y } = useContext(ImageDataContext)
+  const { canvasRef } = useContext(CanvasContext)
 
   const rgb = useMemo(() => {
-    if (!refCanvas.current || !x || !y) {
+    const context = canvasRef.current?.getContext('2d')
+
+    if (!context || !x || !y) {
       return
     }
 
-    const context = refCanvas.current.getContext('2d')
-    if (context) {
-      const pixel = context.getImageData(x, y, 1, 1)      
-      return pixel.data
-    }
-
-    return
-  }, [refCanvas, x, y])
+    const pixel = context.getImageData(x, y, 1, 1)      
+    return pixel.data
+  }, [canvasRef, x, y])
 
   if (!file) {
     return
@@ -32,10 +28,10 @@ export const Footer = () => {
       <div className="container">
         <div className="flex gap-4">
           <div>
-            Ширина: <b>{width}</b>
+            Ширина: <b>{img.width}</b>
           </div>
           <div>
-            Высота: <b>{height}</b>
+            Высота: <b>{img.height}</b>
           </div>
           <div>
             X: <b>{x}</b>
@@ -43,14 +39,16 @@ export const Footer = () => {
           <div>
             Y: <b>{y}</b>
           </div>
-          <div className="flex items-center">
-            rgb: <span className="flex items-center gap-2">
-              <b>{rgb?.toString()}</b>
-              <div className='size-4' style={{
-                backgroundColor: `rgba(${rgb?.toString()})`,
-              }}/>
-            </span>
-          </div>
+          {rgb &&
+            <div className="flex items-center">
+              rgb: <span className="flex items-center gap-2">
+                <b>{rgb.toString()}</b>
+                <div className='size-4' style={{
+                  backgroundColor: `rgba(${rgb.toString()})`,
+                }}/>
+              </span>
+            </div>
+          }
           <div>
           </div>
         </div>
