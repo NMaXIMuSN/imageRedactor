@@ -4,6 +4,8 @@ export interface CanvasContextSchema {
   canvasRef: RefObject<HTMLCanvasElement>
   defaultImageData?: ImageData,
   isVisibleDefaultCanvas: boolean,
+  scaleValue?: number,
+  setScaleValue?: Dispatch<SetStateAction<number>>,
   setIsVisibleDefaultCanvas?: Dispatch<SetStateAction<boolean>>
   setDefaultImageData?: Dispatch<SetStateAction<ImageData | undefined>>
 }

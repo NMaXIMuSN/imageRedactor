@@ -2,11 +2,12 @@ import { useContext, useMemo } from "react"
 import { FileContext } from "../context/FileContext/FileContext"
 import { ImageDataContext } from "../context/ImageDataContext/ImageDataContext"
 import { CanvasContext } from "../context/CanvasContext/CanvasContext"
+import { Slider } from "@/components/ui/slider"
 
 export const Footer = () => {
   const { file } = useContext(FileContext)
   const { img, x, y } = useContext(ImageDataContext)
-  const { canvasRef } = useContext(CanvasContext)
+  const { canvasRef, scaleValue, setScaleValue } = useContext(CanvasContext)
 
   const rgb = useMemo(() => {
     const context = canvasRef.current?.getContext('2d')
@@ -49,7 +50,17 @@ export const Footer = () => {
               </span>
             </div>
           }
-          <div>
+          <div className="flex gap-2">
+            <div>
+              12%
+            </div>
+            <Slider className="w-[300px]" defaultValue={[(scaleValue || 100)]} max={300} min={12} onValueChange={(e) => setScaleValue?.(e[0])}/>
+            <div>
+              300%
+            </div>
+            <div>
+              Значение: <b>{scaleValue}%</b>
+            </div>
           </div>
         </div>
       </div>

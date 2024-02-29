@@ -8,6 +8,7 @@ export interface CanvasContextProviderProps {
 export const CanvasContextProvider = ({ children }: CanvasContextProviderProps) => {
   const [isVisibleDefaultCanvas, setIsVisibleDefaultCanvas] = useState(false)
   const [defaultImageData, setDefaultImageData] = useState<ImageData>()
+  const [scaleValue, setScaleValue] = useState<number>(100)
 
   const value: CanvasContextSchema = {
     canvasRef, 
@@ -15,6 +16,8 @@ export const CanvasContextProvider = ({ children }: CanvasContextProviderProps) 
     setIsVisibleDefaultCanvas,
     defaultImageData,
     setDefaultImageData,
+    scaleValue,
+    setScaleValue,
   }
   return <CanvasContext.Provider value={value}>
     { children }

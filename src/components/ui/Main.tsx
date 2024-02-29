@@ -6,12 +6,13 @@ export const Main = () => {
   const { file, fileUrl } = useContext(FileContext)
 
   if (!file || !fileUrl) {
-    return <div>
+    return <div className="text-center">
       Загрузите файл
     </div>
   }
   return (
-    <main>
+    <main className="h-full">
+
       <Canvas />
     </main>
   )

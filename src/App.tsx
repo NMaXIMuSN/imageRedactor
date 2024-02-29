@@ -15,7 +15,7 @@ function App() {
           <ImageDataContextProvider>
             <div className='flex flex-col min-h-screen'>
               <Header/>
-              <div className='container mt-4 flex-1'>
+              <div className='mt-4 h-[calc(100vh_-_50px_-_50px_-_16px_-_16px)]'>
                 <Main />
               </div>
               <Footer />

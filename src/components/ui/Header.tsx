@@ -3,6 +3,7 @@ import { DownloadImage } from "./DownloadImage"
 import { ResetImage } from "./ResetImage"
 import { Separator } from "./separator"
 import { CheckboxVisibleDefaultCanvas } from "./CheckboxVisibleDefaultCanvas"
+import { DialogResize } from "./DialogResize"
 
 export const Header = () => {
   return (
@@ -16,6 +17,8 @@ export const Header = () => {
           <ResetImage />
           <Separator orientation='vertical' className="bg-white bg-opacity-25" />
           <CheckboxVisibleDefaultCanvas />
+          <Separator orientation='vertical' className="bg-white bg-opacity-25" />
+          <DialogResize />
           <Separator orientation='vertical' className="bg-white bg-opacity-25" />
         </div>
       </div>
