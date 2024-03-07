@@ -9,10 +9,9 @@ export const blackAndWhite: FilterFunction = (r: number, g: number, b: number, a
   return [avg, avg, avg, a]
 }
 
-export const downloadImage = (canvas: HTMLCanvasElement) => {
-  const dataURL = canvas.toDataURL("image/jpeg");
+export const downloadImage = (img: HTMLImageElement) => {
   const link = document.createElement("a");
-  link.href = dataURL;
+  link.href = img.src;
   link.download = `${Date.now()}.jpg`;
   link.click();
 

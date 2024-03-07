@@ -1,4 +1,4 @@
-import { useContext, useEffect, useMemo, useState } from 'react'
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -13,6 +13,11 @@ import { ImageDataContext } from '../context/ImageDataContext/ImageDataContext'
 import { Label } from './label'
 import { Input } from './input'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from './select'
+import { IsLockIcon } from './IsLockIcon'
+import { IsNoLockIcon } from './IsNoLockIcon'
+import { WorkerRequest, WorkerResponse, bilinearScript } from '@/lib/workers/bilinearWorker'
+import { stepwiseScript } from '@/lib/workers/stepwiseWorker'
+import { Progress } from './progress'
 
 type TypeResize = 'pixels' | 'percentages'
 type TypeAlgorithm = 'stepwise' | 'bilinear' | 'bicubic'
@@ -26,12 +31,12 @@ const canvas = document.createElement('canvas')
 
 export const DialogResize = () => {
   const { img } = useContext(ImageDataContext)
-  // const { fileUrl } = useContext(FileContext)
+  const [ isLock, setIsLock ] = useState(false)
   const [ isOpen, setIsOpen ] = useState<boolean>(false)
-
+  const [ isLoading, setIsLoading ] = useState(false)
+  const [ percentages, setPercentages ] = useState(0)
   const [ selectType, setSelectType ] = useState<TypeResize>('pixels')
   const [ selectAlgorithm, setSelectAlgorithm ] = useState<TypeAlgorithm>('stepwise')
-
   const [formValue, setFormValue] = useState<Record<TypeResize, IFormValue>>({
     pixels: {
       height: img.height.toString(),
@@ -43,33 +48,38 @@ export const DialogResize = () => {
     }
   })
 
-  const updateCanvas = (width: number, height: number) => {
+  const bilinearWorker: Worker = useMemo(
+    () => new Worker(bilinearScript),
+    []
+  );
+
+  const stepwiseWorker: Worker = useMemo(
+    () => new Worker(stepwiseScript),
+    []
+  );
+
+  const updateCanvas = (width: number = canvas.width, height: number = canvas.height) => {
     canvas.width = width
     canvas.height = height
     canvas.getContext('2d')?.clearRect(0, 0, canvas.width, canvas.height)
   }
 
   const getSizes = () => {
-    const [ height, width ] = [ img.height, img.width ]
-
-    if (selectType === 'pixels') {
-      return {
-        oldWidth: width,
-        oldHeight: height,
-        newWidth: +formValue.pixels.width,
-        newHeight: +formValue.pixels.height,
-      }
-    }
-
     return {
-      oldWidth: width,
-      oldHeight: height,
-      newWidth: Math.floor(width * parseInt(formValue.percentages.width) / 100),
-      newHeight: Math.floor(height * parseInt(formValue.percentages.height) / 100),
+      oldWidth: img.width,
+      oldHeight: img.height,
+      newWidth: selectType === 'pixels' ? +formValue.pixels.width : Math.floor(img.width * parseInt(formValue.percentages.width) / 100),
+      newHeight: selectType === 'pixels' ? +formValue.pixels.height : Math.floor(img.height * parseInt(formValue.percentages.height) / 100),
     }
   }
 
-  const updateImg = async (ImageData: ImageData, context: CanvasRenderingContext2D) => {
+  const updateImg = useCallback(async (ImageData: ImageData) => {
+    const context = canvas.getContext('2d')
+
+    if (!context) {
+      return
+    }
+
     const ImageBitmap = await createImageBitmap(ImageData)
     context.drawImage(ImageBitmap, 0, 0);
 
@@ -80,93 +90,33 @@ export const DialogResize = () => {
 
       img.src = URL.createObjectURL(blob);      
     });    
-  }
+  }, [img])
 
-  const stepwise = ({
-    newWidth,
-    newHeight,
-    context,
-  }: {
-    newWidth: number,
-    newHeight: number,
-    context: CanvasRenderingContext2D,
-  }) => {
-    const imageData = context.getImageData(0, 0, canvas.width, canvas.height).data;
+  useEffect(() => {
+    if (window.Worker) {
+      const onMessage = async (e: MessageEvent<WorkerResponse>) => {
+        const { data } = e
 
-    const newImageDataArray = new Uint8ClampedArray(newWidth * newHeight * 4)
-    const xRatio = canvas.width / newWidth;
-    const yRatio = canvas.height / newHeight;
+        if (data.type === 'loading') {
+          setPercentages(data.percentages)
+        }
 
-    for (let y = 0; y < newHeight; y++) {
-      for (let x = 0; x < newWidth; x++) {
-        const srcX = Math.floor(x * xRatio);
-        const srcY = Math.floor(y * yRatio);
+        if (data.type === 'finally') {
+          const imageData = new ImageData(data.data, data.newWidth, data.newHeight);
 
-        const dstIndex = (y * newWidth + x) * 4;
-        const srcIndex = (srcY * canvas.width + srcX) * 4;
+          updateCanvas(data.newWidth, data.newHeight);
 
-        newImageDataArray[dstIndex] = imageData[srcIndex];
-        newImageDataArray[dstIndex+ 1] = imageData[srcIndex + 1];
-        newImageDataArray[dstIndex+ 2] = imageData[srcIndex + 2];
-        newImageDataArray[dstIndex+ 3] = imageData[srcIndex + 3];
+          await updateImg(imageData)
+          setIsLoading(false)
+          setIsOpen(false)
+        }
       }
+
+      bilinearWorker.onmessage = onMessage
+      stepwiseWorker.onmessage = onMessage
     }
-    
-    updateCanvas(newWidth, newHeight);
-    return new ImageData(newImageDataArray, newWidth, newHeight);
-  }
-
-  const bilinearInterpolation = (x: number, y: number, ImageData: Uint8ClampedArray, shift = 0) => {
-    const x1 = x
-    const x2 = Math.min(x + 1, canvas.width)
-    const y1 = y
-    const y2 = Math.min(y + 1, canvas.height)
-
-    const f_x1y1 = (y1 * canvas.width + x1) * 4;
-    const f_x1y2 = (y2 * canvas.width + x1) * 4;
-    const f_x2y1 = (y1 * canvas.width + x2) * 4;
-    const f_x2y2 = (y2 * canvas.width + x2) * 4;
-
-    return (
-      ImageData[f_x1y1 + shift] * (x2 - x) * (y2 - y) +
-      ImageData[f_x2y1 + shift] * (x - x1) * (y2 - y) +
-      ImageData[f_x1y2 + shift] * (x2 - x) * (y - y1) +
-      ImageData[f_x2y2 + shift] * (x - x1) * (y - y1)
-    )
-  }
-
-  const bilinear = ({
-    newWidth,
-    newHeight,
-    context,
-  }: {
-    newWidth: number,
-    newHeight: number,
-    context: CanvasRenderingContext2D,
-  }) => {
-    const imageData = context.getImageData(0, 0, canvas.width, canvas.height).data;
-    const newImageDataArray = new Uint8ClampedArray(newWidth * newHeight * 4)
-    const scaleX = newWidth /canvas.width;
-    const scaleY = newHeight / canvas.height;
-
-    for (let y = 0; y < newHeight; y++) {
-      console.log(y + ' / ' + newHeight)
-      for (let x = 0; x < newWidth; x++) {
-        const srcX = Math.floor(x / scaleX);
-        const srcY = Math.floor(y / scaleY);
-
-        const dstIndex = (y * newWidth + x) * 4;
-
-        newImageDataArray[dstIndex + 0] = bilinearInterpolation(srcX, srcY, imageData, 0)
-        newImageDataArray[dstIndex + 1] = bilinearInterpolation(srcX, srcY, imageData, 1)
-        newImageDataArray[dstIndex + 2] = bilinearInterpolation(srcX, srcY, imageData, 2)
-        newImageDataArray[dstIndex + 3] = bilinearInterpolation(srcX, srcY, imageData, 3)
-      }
-    }
-    updateCanvas(newWidth, newHeight);
-    return new ImageData(newImageDataArray, newWidth, newHeight);
-  }
-
+  }, [bilinearWorker, stepwiseWorker, updateImg])  
+  
   useEffect(() => {
     setFormValue({
       pixels: {
@@ -185,14 +135,10 @@ export const DialogResize = () => {
   }
 
   const onSubmit = () => {
-    const {
-      newHeight,
-      newWidth,
-      oldHeight,
-      oldWidth,
-    } = getSizes()
-    
-    updateCanvas(oldWidth, oldHeight)
+    setIsLoading(true)
+    const sizeData = getSizes()
+
+    updateCanvas(sizeData.oldWidth, sizeData.oldHeight)
     const context = canvas.getContext('2d')
 
     if (!context) {
@@ -200,37 +146,23 @@ export const DialogResize = () => {
     }
     context.drawImage(img, 0, 0);
 
-    switch (selectAlgorithm) {
-      case 'bicubic':
-        
-        break;
+    const imageData = context.getImageData(0, 0, canvas.width, canvas.height).data;
 
+    const workerData = {
+      ImageData: imageData,
+      ...sizeData
+    } as WorkerRequest
+
+    switch (selectAlgorithm) {
       case 'bilinear':
-        updateImg(
-          bilinear({
-            context,
-            newHeight,
-            newWidth,
-          }), context)
+        bilinearWorker.postMessage(workerData)
         break;
     
       default:
-        updateImg(
-          stepwise({
-          context,
-          newHeight,
-          newWidth,
-        }), context)
+        stepwiseWorker.postMessage(workerData)
         break;
     }
-
-
-    setIsOpen(false)
   }
-
-  const countPx = useMemo(() => {
-    return img.width * img.height * 4
-  }, [img.width,img.height, img])
 
   const newCountPx = useMemo(() => {
     if (selectType === 'pixels') {
@@ -239,6 +171,7 @@ export const DialogResize = () => {
 
     return img.width * parseInt(formValue.percentages.width) / 100 * img.height * parseInt(formValue.percentages.height) / 100 * 4
   }, [formValue.percentages.height, formValue.percentages.width, formValue.pixels.height, formValue.pixels.width, img.height, img.width, selectType])
+
   return (
     <Dialog open={isOpen} onOpenChange={handleOnOpenChange}>
       <DialogTrigger className="dark">
@@ -251,13 +184,12 @@ export const DialogResize = () => {
           Изменение размеров изображения
         </DialogTitle>
         <DialogDescription>
-          <div>
-            Изначальное кол-во пикселей: <b>{countPx}px</b>
-          </div>
-          <div>
-            Новое кол-во пикселей: <b>{newCountPx}px</b>
-          </div>
+            Изначальное кол-во пикселей: <b>{img.width * img.height * 4}px</b>
         </DialogDescription>
+        <DialogDescription>
+          Новое кол-во пикселей: <b>{newCountPx}px</b>
+        </DialogDescription>
+
         </DialogHeader>
         <div>
         <div className="grid gap-4 py-4">
@@ -284,29 +216,50 @@ export const DialogResize = () => {
               </Label>
               <Input
                 id="wight"
-                className="col-span-4"
+                className="col-span-3"
                 value={formValue[selectType].width}
                 onChange={(e) => {
                   setFormValue((prev) => {
                     const newValue = {...prev}
                     newValue[selectType].width = e.target.value;
+                    if (isLock) {
+                      if (selectType === 'percentages') {
+                        newValue[selectType].height = newValue[selectType].width;
+                      } else {
+                        const scale = img.width / img.height;
+                        newValue[selectType].height = Math.floor((parseInt(newValue[selectType].width) / scale) || 0).toString()
+                      }
+                    }
                     return newValue
                   })
                 }}
               />
+
+              <div className='flex cursor-pointer justify-center mb-[-50px]' onClick={() => setIsLock((prev) => !prev)}>
+                { isLock ? <IsLockIcon className='w-[50px] h-[50px]' /> : <IsNoLockIcon className='w-[50px] h-[50px]' />}
+              </div>
             </div>
+
             <div className="grid grid-cols-5 items-center gap-4">
               <Label htmlFor="height" className="text-left">
                 Высота({selectType === 'pixels' ? 'px': '%'}):
               </Label>
               <Input
                 id="height"
-                className="col-span-4"
+                className="col-span-3"
                 value={formValue[selectType].height}
                 onChange={(e) => {
                   setFormValue((prev) => {
                     const newValue = {...prev}
                     newValue[selectType].height = e.target.value;
+                    if (isLock) {
+                      if (selectType === 'percentages') {
+                        newValue[selectType].width = newValue[selectType].height;
+                      } else {
+                        const scale = img.height / img.width;
+                        newValue[selectType].width = Math.floor(parseInt(newValue[selectType].height) / scale).toString()
+                      }
+                    }
                     return newValue
                   })
                 }}
@@ -334,7 +287,9 @@ export const DialogResize = () => {
           </div>
         </div>
         <DialogFooter>
-          <Button onClick={onSubmit} type="submit">Подтвердить</Button>
+          { isLoading && <Progress value={percentages} /> }
+
+          { !isLoading && <Button onClick={onSubmit} type="submit">Подтвердить</Button> }
         </DialogFooter>
       </DialogContent>
     </Dialog>

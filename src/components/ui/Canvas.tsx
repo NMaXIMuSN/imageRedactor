@@ -57,7 +57,6 @@ export const Canvas = () => {
 
       updateCanvasSize()
 
-      console.log(context.getImageData(0, 0, img.width, img.height))
       updateImgCanvas()
       setDefaultImageData?.(context.getImageData(0, 0, img.width, img.height))
       

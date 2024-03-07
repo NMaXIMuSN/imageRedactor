@@ -3,7 +3,7 @@ import { CanvasContext } from "./CanvasContext";
 
 export function useCanvasContext() {
   const [ref, setRef] = useState<RefObject<HTMLCanvasElement>>();
-  const {canvasRef} = useContext(CanvasContext);
+  const { canvasRef } = useContext(CanvasContext);
 
   useEffect(() => {
     setRef(canvasRef);
