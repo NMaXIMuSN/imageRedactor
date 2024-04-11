@@ -166,10 +166,10 @@ export const DialogResize = () => {
 
   const newCountPx = useMemo(() => {
     if (selectType === 'pixels') {
-      return parseInt(formValue.pixels.width) * parseInt(formValue.pixels.height) * 4
+      return Math.ceil(parseInt(formValue.pixels.width) * parseInt(formValue.pixels.height) * 4)
     }
 
-    return img.width * parseInt(formValue.percentages.width) / 100 * img.height * parseInt(formValue.percentages.height) / 100 * 4
+    return img.width * Math.ceil(parseInt(formValue.percentages.width) / 100) * img.height * Math.ceil(parseInt(formValue.percentages.height) / 100) * 4
   }, [formValue.percentages.height, formValue.percentages.width, formValue.pixels.height, formValue.pixels.width, img.height, img.width, selectType])
 
   return (

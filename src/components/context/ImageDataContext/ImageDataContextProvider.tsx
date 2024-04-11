@@ -10,6 +10,7 @@ export const ImageDataContextProvider= ({ children }: ImageDataContextProviderPr
   const { fileUrl } = useContext(FileContext)
   const [ x, setX ] = useState(0)
   const [ y, setY ] = useState(0)
+  const [ currentColor, setCurrentColor ] = useState<Uint8ClampedArray>(new Uint8ClampedArray())
 
   useEffect(() => {
     img.src = fileUrl || ''
@@ -20,7 +21,9 @@ export const ImageDataContextProvider= ({ children }: ImageDataContextProviderPr
     setY,
     x,
     y,
-    img
+    img,
+    currentColor,
+    setCurrentColor,
   }
 
   return (

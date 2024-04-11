@@ -5,6 +5,8 @@ export interface ImageDataContextSchema {
   y?: number,
   setY?: Dispatch<SetStateAction<number>>,
   setX?: Dispatch<SetStateAction<number>>,
+  currentColor?: Uint8ClampedArray,
+  setCurrentColor?: Dispatch<SetStateAction<Uint8ClampedArray>>,
   img: HTMLImageElement
 }
 

@@ -5,6 +5,10 @@ export interface CanvasContextSchema {
   defaultImageData?: ImageData,
   isVisibleDefaultCanvas: boolean,
   scaleValue?: number,
+  isMoveable?: boolean,
+  setIsMovable?: Dispatch<SetStateAction<boolean>>,
+  isEyedropper?: boolean,
+  setIsEyedropper?: Dispatch<SetStateAction<boolean>>
   setScaleValue?: Dispatch<SetStateAction<number>>,
   setIsVisibleDefaultCanvas?: Dispatch<SetStateAction<boolean>>
   setDefaultImageData?: Dispatch<SetStateAction<ImageData | undefined>>

@@ -6,6 +6,8 @@ export interface CanvasContextProviderProps {
 }
 
 export const CanvasContextProvider = ({ children }: CanvasContextProviderProps) => {
+  const [isMoveable, setIsMovable] = useState(false)
+  const [isEyedropper, setIsEyedropper] = useState(false)
   const [isVisibleDefaultCanvas, setIsVisibleDefaultCanvas] = useState(false)
   const [defaultImageData, setDefaultImageData] = useState<ImageData>()
   const [scaleValue, setScaleValue] = useState<number>(100)
@@ -18,7 +20,12 @@ export const CanvasContextProvider = ({ children }: CanvasContextProviderProps) 
     setDefaultImageData,
     scaleValue,
     setScaleValue,
+    isMoveable,
+    setIsMovable,
+    isEyedropper,
+    setIsEyedropper
   }
+
   return <CanvasContext.Provider value={value}>
     { children }
   </CanvasContext.Provider>
