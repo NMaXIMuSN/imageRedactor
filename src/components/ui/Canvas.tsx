@@ -13,7 +13,7 @@ const position = {
 export const Canvas = () => {
   const { img, setX, setY, setCurrentColor, x: currentImageX, y: currentImageY } = useContext(ImageDataContext)
   const { canvasRef, scaleValue, setDefaultImageData, isMoveable, isEyedropper } = useContext(CanvasContext);
-  const { setFirstHistory, setSecondHistory } = useContext(EyedropperContext);
+  const { addFirstHistory, addSecondHistory } = useContext(EyedropperContext);
 
   const clearCanvas = useCallback(() => {
     if (!canvasRef.current) {
@@ -207,14 +207,51 @@ export const Canvas = () => {
         y: currentImageY || 0,
       }
       
-      if (e.metaKey) {
-        setSecondHistory?.((prev) => [...prev, item])
+      if (e.shiftKey) {
+        addSecondHistory?.(item)
 
         return
       }
-      setFirstHistory?.((prev) => [...prev,item])
+      addFirstHistory?.(item)
     }
   }
+
+  const fc: Record<string, () => void> = useMemo(() => ({
+    'ArrowRight': () => {
+      position.right = Math.min(position.right + 20, (canvasRef.current?.width || Infinity))
+      position.left = position.right - getWidthAndHeight()[0]
+      drawImage(img, position.left, position.top)
+    },
+    'ArrowLeft': () => {
+      position.left = Math.max(position.left - 20, 0)
+      position.right = position.left + getWidthAndHeight()[0]
+
+      drawImage(img, position.left, position.top)
+    },
+    'ArrowUp': () => {
+      position.top = Math.max(position.top - 20, 0)
+      position.bottom = position.top + getWidthAndHeight()[1]
+
+      drawImage(img, position.left, position.top)
+    },
+    'ArrowDown': () => {
+      position.bottom = Math.min(position.bottom + 20, (canvasRef.current?.height || Infinity))
+      position.top = position.bottom - getWidthAndHeight()[1]
+      drawImage(img, position.left, position.top)
+    },
+  }), [canvasRef, drawImage, getWidthAndHeight, img])
+
+  const cb = useCallback((e:KeyboardEvent) => {
+    fc?.[e.key]?.()
+  }, [fc])
+
+  useEffect(() => {
+    if (isMoveable) {
+      window.addEventListener('keydown', cb)
+    } else {
+      window.removeEventListener('keydown', cb)
+    }
+  }, [cb, isMoveable])
 
   return (
     <>

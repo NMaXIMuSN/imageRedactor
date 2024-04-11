@@ -1,14 +1,16 @@
 import { Dispatch, RefObject, SetStateAction, createContext, createRef } from "react";
 
+export type ToolType = 'movable' | 'eyedropper' | ''
+
 export interface CanvasContextSchema {
   canvasRef: RefObject<HTMLCanvasElement>
   defaultImageData?: ImageData,
   isVisibleDefaultCanvas: boolean,
   scaleValue?: number,
   isMoveable?: boolean,
-  setIsMovable?: Dispatch<SetStateAction<boolean>>,
   isEyedropper?: boolean,
-  setIsEyedropper?: Dispatch<SetStateAction<boolean>>
+  currentTool?: ToolType,
+  setCurrentTool?: Dispatch<SetStateAction<ToolType>>,
   setScaleValue?: Dispatch<SetStateAction<number>>,
   setIsVisibleDefaultCanvas?: Dispatch<SetStateAction<boolean>>
   setDefaultImageData?: Dispatch<SetStateAction<ImageData | undefined>>

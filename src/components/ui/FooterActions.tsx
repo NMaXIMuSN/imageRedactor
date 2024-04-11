@@ -11,15 +11,15 @@ interface FooterActionsProps {
 }
 
 export const FooterActions = ({ className }: FooterActionsProps) => {
-  const { isMoveable, setIsMovable, isEyedropper, setIsEyedropper } = useContext(CanvasContext)
-  useHotkeys('m', 'meta', (e) => {
+  const { isMoveable, isEyedropper, setCurrentTool } = useContext(CanvasContext)
+  useHotkeys('m', 'ctrl', (e) => {
     e.preventDefault()
-    setIsMovable?.(prev => !prev)
+    setCurrentTool?.((prev) => prev === 'movable' ? '' : 'movable')
   })
 
-  useHotkeys('p', 'meta', (e) => {
+  useHotkeys('e', 'ctrl', (e) => {
     e.preventDefault()
-    setIsEyedropper?.(prev => !prev)
+    setCurrentTool?.((prev) => prev === 'eyedropper' ? '' : 'eyedropper')
   })
 
   return (
@@ -32,13 +32,13 @@ export const FooterActions = ({ className }: FooterActionsProps) => {
                 'bg-gray-700': isMoveable,
                 'border-transparent': !isMoveable,
               })}
-              onClick={() => {setIsMovable?.(prev => !prev)}}
+              onClick={() => {setCurrentTool?.((prev) => prev === 'movable' ? '' : 'movable')}}
             >
               <DnDIcon  width={20} height={20}/>
             </div>
           </TooltipTrigger>
           <TooltipContent >
-            <div>Позволяет изменять положение изображения <ShortCut className='inline'>⌘M</ShortCut></div>
+            <div>Позволяет изменять положение изображения <ShortCut className='inline'>Ctrl+M</ShortCut></div>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
@@ -50,13 +50,13 @@ export const FooterActions = ({ className }: FooterActionsProps) => {
                 'bg-gray-700': isEyedropper,
                 'border-transparent': !isEyedropper,
               })}
-              onClick={() => {setIsEyedropper?.(prev => !prev)}}
+              onClick={() => {setCurrentTool?.((prev) => prev === 'eyedropper' ? '' : 'eyedropper')}}
             >
               <EyedropperIcon width={20} height={20}/>
             </div>
           </TooltipTrigger>
           <TooltipContent >
-            <div>Позволяет посмотреть цвет определенного пикселя <ShortCut className='inline'>⌘P</ShortCut></div>
+            <div>Позволяет посмотреть цвет определенного пикселя <ShortCut className='inline'>Ctrl+E</ShortCut></div>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>

@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, createContext } from "react";
+import { createContext } from "react";
 
 export interface EyedropperItemSchema {
   id: number
@@ -10,8 +10,10 @@ export interface EyedropperItemSchema {
 export interface EyedropperContextSchema {
   firstHistory?: EyedropperItemSchema[]
   secondHistory?: EyedropperItemSchema[]
-  setFirstHistory?: Dispatch<SetStateAction<EyedropperItemSchema[]>>
-  setSecondHistory?: Dispatch<SetStateAction<EyedropperItemSchema[]>>
+  addFirstHistory?: (e: EyedropperItemSchema) => void
+  addSecondHistory?: (e: EyedropperItemSchema) => void
+  resetFirstHistory?: () => void
+  resetSecondHistory?: () => void
 }
 
 export const EyedropperContext = createContext<EyedropperContextSchema>({})
