@@ -246,11 +246,11 @@ export const Canvas = () => {
   }, [fc])
 
   useEffect(() => {
-    if (isMoveable) {
-      window.addEventListener('keydown', cb)
-    } else {
-      window.removeEventListener('keydown', cb)
-    }
+      if (isMoveable) {
+        window.addEventListener('keydown', cb);
+      }
+
+      return () => window.removeEventListener('keydown', cb);
   }, [cb, isMoveable])
 
   return (
