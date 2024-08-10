@@ -1,5 +1,5 @@
 import { ReactNode, useContext, useEffect, useState } from "react"
-import { ImageDataContext, ImageDataContextSchema, img } from "./ImageDataContext"
+import { ImageDataContext, ImageDataContextSchema, img, startImg } from "./ImageDataContext"
 import { FileContext } from "../FileContext/FileContext"
 
 export interface ImageDataContextProviderProps {
@@ -13,6 +13,10 @@ export const ImageDataContextProvider= ({ children }: ImageDataContextProviderPr
   const [ currentColor, setCurrentColor ] = useState<Uint8ClampedArray>(new Uint8ClampedArray())
 
   useEffect(() => {
+    if (!startImg.src) {
+      startImg.src = fileUrl || ''
+    }
+
     img.src = fileUrl || ''
   }, [fileUrl])
 
@@ -22,6 +26,7 @@ export const ImageDataContextProvider= ({ children }: ImageDataContextProviderPr
     x,
     y,
     img,
+    startImg,
     currentColor,
     setCurrentColor,
   }
