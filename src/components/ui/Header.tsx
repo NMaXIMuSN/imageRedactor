@@ -4,6 +4,7 @@ import { ResetImage } from "./ResetImage"
 import { Separator } from "./separator"
 import { DialogResize } from "./DialogResize"
 import { DialogHistogram } from "./DialogHistogram"
+import { DialogFilters } from "./DialogFilters"
 
 export const Header = () => {
   return (
@@ -19,6 +20,8 @@ export const Header = () => {
           <DialogResize />
           <Separator orientation='vertical' className="bg-white bg-opacity-25" />
           <DialogHistogram />
+          <Separator orientation='vertical' className="bg-white bg-opacity-25" />
+          <DialogFilters />
           <Separator orientation='vertical' className="bg-white bg-opacity-25" />
         </div>
       </div>

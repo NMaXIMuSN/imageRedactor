@@ -242,26 +242,26 @@ export const  DialogHistogram = () => {
         Гистограмма
       </DialogTrigger>
 
-      <DialogContent>
+      <DialogContent className='flex flex-col max-h-[calc(100vh_-_30px)]'>
         <DialogHeader>
           <DialogTitle>
             Гистограмма
           </DialogTitle>
         </DialogHeader>
-        <div>
-          <div className='flex justify-center p-4'>
+        <div className='flex-1 overflow-auto'>
+          <div className='flex justify-center pb-2'>
             <canvas width={256} height={256} ref={canvasRef}/>
           </div>
-          <div className='flex flex-col gap-4 items-center'>
-            <div className='flex gap-4 w-full'>
+          <div className='flex flex-col gap-2 items-center'>
+            <div className='flex gap-2 w-full'>
               <Input value={firstX} onChange={(e) => setFirstX(Math.min(255, secondX - 1, Math.max(0, Number(e.target.value))))} inputMode='numeric' type='number' className='flex-1'/>
               <Input value={firstY} onChange={(e) => setFirstY(Math.min(255, Math.max(0, Number(e.target.value))))} inputMode='numeric' type='number' className='flex-1'/>
             </div>
-            <div className='flex gap-4 w-full'>
+            <div className='flex gap-2 w-full'>
               <Input value={secondX} onChange={(e) => setSecondX(Math.min(255, Math.max(0, firstX + 1, Number(e.target.value))))} inputMode='numeric' type='number' className='flex-1'/>
               <Input value={secondY} onChange={(e) => setSecondY(Math.min(255, Math.max(0, Number(e.target.value))))} inputMode='numeric' type='number' className='flex-1'/>
             </div>
-            <div className='flex gap-4 w-full'>
+            <div className='flex gap-2 w-full'>
 
             <Button className='flex-1' onClick={() => {
               resetPointsPosition()
@@ -276,9 +276,8 @@ export const  DialogHistogram = () => {
               </Label>
             </div>
             {
-              isPreview && <div >
-                <canvas width={img.width}  height={img.height} className='w-auto' ref={prewCanvasRef}></canvas>
-              </div>
+              isPreview && 
+                <canvas width={img.width}  height={img.height} className='max-w-60 max-h-60 mx-auto' ref={prewCanvasRef} />
             }
           </div>
         </div>
